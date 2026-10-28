@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the TRCC colour watcher every 20 s
+
+[Timer]
+OnBootSec=45s
+OnUnitActiveSec=20s
+Unit=trcc-colorwatch.service
+
+[Install]
+WantedBy=timers.target

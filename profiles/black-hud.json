@@ -1,0 +1,127 @@
+{
+  "name": "Black HUD",
+  "width": 1600,
+  "height": 720,
+  "screencast_rect": [
+    0,
+    0,
+    720,
+    1600
+  ],
+  "screencast_border": false,
+  "overlay_enabled": true,
+  "elements": [
+    {
+      "id": "el_f40134f1",
+      "type": "text",
+      "x": 124,
+      "y": 44,
+      "color": "#ffffff",
+      "size": 48,
+      "bold": true,
+      "italic": false,
+      "text": "CPU"
+    },
+    {
+      "id": "el_1b9dcdb8",
+      "type": "metric",
+      "x": 306,
+      "y": 44,
+      "color": "#ffffff",
+      "size": 48,
+      "bold": true,
+      "italic": false,
+      "metric": "cpu:temp",
+      "format": "{value:.0f}°C",
+      "show_unit": true
+    },
+    {
+      "id": "el_8866dcb9",
+      "type": "metric",
+      "x": 467,
+      "y": 45,
+      "color": "#ffffff",
+      "size": 48,
+      "bold": true,
+      "italic": false,
+      "metric": "cpu:usage",
+      "format": "{value:.0f}%",
+      "show_unit": true
+    },
+    {
+      "id": "el_62e49099",
+      "type": "text",
+      "x": 122,
+      "y": 680,
+      "color": "#ffffff",
+      "size": 48,
+      "bold": true,
+      "italic": false,
+      "text": "GPU"
+    },
+    {
+      "id": "el_ff0f104d",
+      "type": "metric",
+      "x": 306,
+      "y": 679,
+      "color": "#ffffff",
+      "size": 48,
+      "bold": true,
+      "italic": false,
+      "metric": "gpu:primary:temp",
+      "format": "{value:.0f}°C",
+      "show_unit": true
+    },
+    {
+      "id": "el_bce53666",
+      "type": "metric",
+      "x": 467,
+      "y": 679,
+      "color": "#ffffff",
+      "size": 48,
+      "bold": true,
+      "italic": false,
+      "metric": "gpu:primary:usage",
+      "format": "{value:.0f}%",
+      "show_unit": true
+    },
+    {
+      "id": "el_12451a36",
+      "type": "clock",
+      "x": 1236,
+      "y": 226,
+      "color": "#ffffff",
+      "size": 72,
+      "bold": true,
+      "italic": false,
+      "source": "time",
+      "format": "{value}"
+    },
+    {
+      "id": "el_a9eb25db",
+      "type": "clock",
+      "x": 1236,
+      "y": 464,
+      "color": "#ffffff",
+      "size": 36,
+      "bold": true,
+      "italic": false,
+      "source": "date",
+      "format": "{value}"
+    },
+    {
+      "id": "el_db6e601b",
+      "type": "clock",
+      "x": 1236,
+      "y": 544,
+      "color": "#ffffff",
+      "size": 36,
+      "bold": true,
+      "italic": false,
+      "source": "weekday",
+      "format": "{value}"
+    }
+  ],
+  "background": null,
+  "mask": null
+}

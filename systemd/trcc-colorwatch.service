@@ -1,0 +1,7 @@
+[Unit]
+Description=Recolour TRCC overlay metrics by threshold
+After=trccd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/.local/bin/trcc-colorwatch.py

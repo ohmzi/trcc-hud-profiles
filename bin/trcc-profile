@@ -1,0 +1,75 @@
+#!/bin/bash
+# Switch a saved TRCC profile, its mask and its colour palette together.
+#
+# TRCC does two things that make a profile only half-portable, and this script
+# covers both:
+#   * an overlay element carries ONE fixed colour, so the escalation palette
+#     lives outside TRCC (trcc-colorwatch.py reads it);
+#   * a theme's in-dir 01.png is not adopted as the device mask on load, so the
+#     profile's mask has to be applied explicitly.
+#
+# Profile list (name|base|warn|hot|mask):
+#   ~/.config/trcc-hud/profiles.conf   (see profiles/profiles.conf in the repo)
+set -eu
+
+TRCC="${TRCC_BIN:-/usr/bin/trcc}"
+CONFIG="${TRCC_HUD_CONFIG:-$HOME/.config/trcc-hud/profiles.conf}"
+PALETTE="$HOME/.config/trcc-hud/palette.json"
+WATCHER="$(dirname "$(readlink -f "$0")")/trcc-colorwatch.py"
+
+# The theme root is per-panel resolution: ~/.trcc-user/data/theme<w><h>.
+theme_root() {
+    if [ -n "${TRCC_THEME_ROOT:-}" ]; then echo "$TRCC_THEME_ROOT"; return; fi
+    ls -d "$HOME"/.trcc-user/data/theme* 2>/dev/null | head -1
+}
+
+device_key() {
+    if [ -n "${TRCC_DEVICE:-}" ]; then echo "$TRCC_DEVICE"; return; fi
+    "$TRCC" detect 2>/dev/null | grep -oE '\b[0-9a-f]{4}:[0-9a-f]{4}\b' | head -1
+}
+
+usage() { echo "usage: trcc-profile <name> | --list" >&2; exit 2; }
+
+[ -f "$CONFIG" ] || { echo "no profile list at $CONFIG" >&2; exit 1; }
+
+if [ "${1:-}" = "--list" ] || [ "${1:-}" = "-l" ]; then
+    awk -F'|' '!/^[[:space:]]*#/ && NF>=5 {printf "  %-14s base %-8s warn %-8s hot %-8s mask %s\n", $1,$2,$3,$4,$5}' "$CONFIG"
+    exit 0
+fi
+
+NAME="${1:-}"
+[ -n "$NAME" ] || usage
+LINE="$(awk -F'|' -v n="$NAME" '!/^[[:space:]]*#/ && NF>=5 && $1==n {print; exit}' "$CONFIG")"
+[ -n "$LINE" ] || { echo "unknown profile: $NAME (try --list)" >&2; exit 1; }
+
+BASE="$(echo "$LINE" | cut -d'|' -f2)"
+WARN="$(echo "$LINE" | cut -d'|' -f3)"
+HOT="$(echo "$LINE" | cut -d'|' -f4)"
+MASK="$(echo "$LINE" | cut -d'|' -f5)"
+
+ROOT="$(theme_root)"
+[ -n "$ROOT" ] || { echo "no TRCC theme root under ~/.trcc-user/data" >&2; exit 1; }
+KEY="$(device_key)"
+[ -n "$KEY" ] || { echo "no panel found; is trccd running?" >&2; exit 1; }
+[ -d "$ROOT/$NAME" ] || { echo "no theme directory at $ROOT/$NAME" >&2; exit 1; }
+
+mkdir -p "$(dirname "$PALETTE")"
+printf '{"base": "%s", "warn": "%s", "hot": "%s"}\n' "$BASE" "$WARN" "$HOT" > "$PALETTE"
+rm -f "$HOME/.trcc/colorwatch.json"        # new element ids → re-resolve
+
+"$TRCC" display load-theme "$KEY" "$ROOT/$NAME" | tail -1
+
+if [ "$MASK" != "-" ] && [ -n "$MASK" ]; then
+    case "$MASK" in /*) MASK_PATH="$MASK" ;; *) MASK_PATH="$(dirname "$CONFIG")/$MASK" ;; esac
+    if [ -f "$MASK_PATH" ]; then
+        "$TRCC" display apply-mask "$KEY" "$MASK_PATH" | tail -1
+        "$TRCC" display mask-visible "$KEY" on >/dev/null
+    else
+        echo "mask not found: $MASK_PATH" >&2
+    fi
+else
+    "$TRCC" display mask-visible "$KEY" off >/dev/null
+fi
+
+[ -x "$WATCHER" ] && python3 "$WATCHER" >/dev/null 2>&1 || true
+echo "profile: $NAME"
